@@ -1,0 +1,2 @@
+# Module org.vaadin.hezamu.devoxx2011.widgetset.DevoxxWidgetset
+# RPC service class, partial path of RPC policy file
