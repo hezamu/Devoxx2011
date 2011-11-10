@@ -17,17 +17,23 @@ class DevoxxApplication extends Application {
 	val canvas = new Canvas()
 	canvas.setSizeFull
 	canvas.setBackgroundColor("#000")
+	canvas.setFillStyle("#fff")
 
 	val world = new World // Game of Life board
-
-	// Cell colors: empty cell, just died, stays alive, just became alive
-	val fillStyles = List("#000", "#311", "#ddd", "#afa")
-	var currentStyle = ""
 
 	// Create and initialize the refresher, which will periodically pull
 	// the UI state to the brow
 	val refresher = new Refresher()
 	refresher.setRefreshInterval(100)
+	refresher.addListener(new Refresher.RefreshListener() {
+		def refresh(source: Refresher): Unit = {
+			canvas.reset
+
+			world.increment
+
+			world.cells.foreach(drawCell)
+		}
+	})
 
 	// Vaadin UI initializer
 	def init {
@@ -37,30 +43,13 @@ class DevoxxApplication extends Application {
 			add(refresher)
 		}))
 
-		// Draw the initial state of the world. The grid is sorted by cell
-		// state before drawing to minimize fill style changes
-		world.cells.toSeq.sortBy(_._2).foreach(drawCell)
-
-		refresher.addListener(new Refresher.RefreshListener() {
-			def refresh(source: Refresher): Unit = {
-				canvas.reset
-
-				world.increment
-
-				world.cells.toSeq.sortBy(_._2).foreach(drawCell)
-			}
-		})
+		world.cells.foreach(drawCell) // Draw the initial state of the world.
 	}
 
 	/**
 	 * Draw a rect corresponding to a cell. Fill style is changed if necessary.
 	 */
-	def drawCell(cell: ((Int, Int), Int)) {
-		if (currentStyle != fillStyles(cell._2)) {
-			currentStyle = fillStyles(cell._2)
-			canvas.setFillStyle(currentStyle)
-		}
-
-		canvas.fillRect(350 + cell._1._1 * 8, 150 + cell._1._2 * 8, 8, 8)
+	def drawCell(cell: (Int, Int)) {
+		canvas.fillRect(350 + cell._1 * 8, 150 + cell._2 * 8, 8, 8)
 	}
 }
